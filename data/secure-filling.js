@@ -89,10 +89,12 @@ var obj = new passwordObject("Steve", "1234", "test.test");
 var inputs = document.getElementsByTagName('input');
 for (var i = 0; i < inputs.length; i++) {
 	var form = inputs[i].form;
-	if (form.action == obj.action) {
+	if(form){
+	  if (form.action == obj.action) {
 		// use regex to get name/id of field to determine what to fill with
 		// Ex: if current input is for username, use:
 		// fillTrue(inputs[i], obj.username);
+	  }
 	}
 	if (inputs[i].type.toLowerCase() == 'password') {
 		inputs[i].value = obj.password;
