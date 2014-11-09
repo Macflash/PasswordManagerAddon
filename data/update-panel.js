@@ -35,6 +35,10 @@ var countryInput = document.getElementById("country");
 var phoneInput = document.getElementById("phone");  
 var emailInput = document.getElementById("email");  
 
+var usernameInput = document.getElementById("username");
+var passwordInput = document.getElementById("password");  
+var actionInput = document.getElementById("action"); 
+
 //Add click listeners
 fillButton.addEventListener("click", 
 function(){
@@ -49,19 +53,16 @@ function(){
   self.port.emit("pinfo-request");
 });
 
-userpButton.addEventListener("click", function(){});
-var newSaveObj;
+userpButton.addEventListener("click",
+function(){
+	// Request user/password object from main thread
+	self.port.emit("userp-request");
+});
+
 //Add Save button click listeners
 savepinfoButton.addEventListener("click",
 function(){
-	console.log(firstInput.value);
-	console.log(lastInput.value);
-	console.log(addressInput.value);
-	console.log(stateInput.value);
-	console.log(countryInput.value);
-	console.log(phoneInput.value);
-	console.log(emailInput.value);
-	newSaveObj = new personalInfoObject(
+	var newSaveObj = new personalInfoObject(
 						firstInput.value,
 						lastInput.value,
 						addressInput.value,
@@ -69,8 +70,16 @@ function(){
 						countryInput.value,
 						phoneInput.value,
 						emailInput.value);
-	console.log(JSON.stringify(newSaveObj));
 	self.port.emit("save-pinfo-request", newSaveObj);
+});
+
+saveuserpButton.addEventListener("click",
+function(){
+	var newSaveObj = new passwordObject(
+						usernameInput.value,
+						passwordInput.value,
+						actionInput.value);
+	self.port.emit("save-userp-request", newSaveObj);
 });
 
 //Add response listeners
@@ -78,6 +87,13 @@ self.port.on("save-pinfo-response",
 function(){
 	// Reset the visibility for the popup
 	pinfoDiv.style.display = "none";
+	buttonDiv.style.display = "block";
+});
+
+self.port.on("save-userp-response",
+function(){
+	// Reset the visibility for the popup
+	userpDiv.style.display = "none";
 	buttonDiv.style.display = "block";
 });
 
@@ -98,6 +114,23 @@ self.port.on("pinfo-response", function(savedInfo){
 			countryInput.value = savedObj.country;
 			phoneInput.value = savedObj.phone;
 			emailInput.value = savedObj.email;
+		}
+	}
+});
+
+self.port.on("userp-response", function(savedInfo){
+	// Display userp div and hide buttons
+	userpDiv.style.display = "block";
+	buttonDiv.style.display = "none";
+	// Fill in the values if we have some saved
+	if(savedInfo){
+		console.log("save: " + savedInfo);
+		var savedObj = JSON.parse(savedInfo);
+		if(savedObj){
+			// this should be an array keyed by either form action or domain...
+			usernameInput.value = savedObj.username;
+			passwordInput.value = savedObj.password;
+			actionInput.value = savedObj.action;
 		}
 	}
 });
