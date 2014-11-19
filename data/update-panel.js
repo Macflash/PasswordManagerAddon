@@ -78,7 +78,7 @@ function(){
 	var newSaveObj = new passwordObject(
 						usernameInput.value,
 						passwordInput.value,
-						actionInput.value);
+						encodeURIComponent(actionInput.value));
 	self.port.emit("save-userp-request", newSaveObj);
 });
 
@@ -118,20 +118,17 @@ self.port.on("pinfo-response", function(savedInfo){
 	}
 });
 
-self.port.on("userp-response", function(savedInfo){
+self.port.on("userp-response", function(savedObj){
 	// Display userp div and hide buttons
 	userpDiv.style.display = "block";
 	buttonDiv.style.display = "none";
 	// Fill in the values if we have some saved
-	if(savedInfo){
-		console.log("save: " + savedInfo);
-		var savedObj = JSON.parse(savedInfo);
-		if(savedObj){
-			// this should be an array keyed by either form action or domain...
-			usernameInput.value = savedObj.username;
-			passwordInput.value = savedObj.password;
-			actionInput.value = savedObj.action;
-		}
+	if(savedObj){
+		console.log("save: " + savedObj);
+		// this should be an array keyed by either form action or domain...
+		usernameInput.value = savedObj.username;
+		passwordInput.value = savedObj.password;
+		actionInput.value = decodeURIComponent(savedObj.action);
 	}
 });
 
