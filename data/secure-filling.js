@@ -57,6 +57,7 @@ function fillTrue(el, val) {
 	if (el.type.toLowerCase() == "password") {
 		if (el.value != dummy) {
 			console.log("Not filling modified password field");
+			return;
 		}
 	}
 	el.value = val;
