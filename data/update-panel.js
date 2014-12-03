@@ -9,7 +9,7 @@ function personalInfoObject(first, last, address, city, state, country, phone, e
 	this.first = first;
 	this.last = last;
 	this.address = address;
-	this.city = city.
+	this.city = city;
 	this.state = state;
 	this.country = country;
 	this.phone = phone;
