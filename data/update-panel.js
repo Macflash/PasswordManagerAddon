@@ -21,12 +21,17 @@ var fillButton = document.getElementById("fill");
 var pinfoButton = document.getElementById("pinfo");
 var userpButton = document.getElementById("userp");
 
+var cancelButton = document.getElementById("cancel");
+
 var savepinfoButton = document.getElementById("save-pinfo");
 var saveuserpButton = document.getElementById("save-userp");
 
 var buttonDiv = document.getElementById("buttonDiv");
 var pinfoDiv = document.getElementById("pinfoDiv");
 var userpDiv = document.getElementById("userpDiv");
+var cancelDiv = document.getElementById("cancelDiv");
+
+cancelDiv.style.display = "none";
 
 var firstInput = document.getElementById("first");
 var lastInput = document.getElementById("last");  
@@ -39,7 +44,7 @@ var emailInput = document.getElementById("email");
 
 var usernameInput = document.getElementById("username");
 var passwordInput = document.getElementById("password");  
-var actionInput = document.getElementById("action"); 
+var actionInput = document.getElementById("action");
 
 //Add click listeners
 fillButton.addEventListener("click", 
@@ -59,6 +64,13 @@ userpButton.addEventListener("click",
 function(){
 	// Request user/password object from main thread
 	self.port.emit("userp-request");
+});
+
+cancelButton.addEventListener("click", 
+	function(){
+	  // Send a fill message back to the main thread
+	  self.port.emit("cancel-request");
+	  //self.hide();
 });
 
 //Add Save button click listeners
@@ -91,6 +103,7 @@ function(){
 	// Reset the visibility for the popup
 	pinfoDiv.style.display = "none";
 	buttonDiv.style.display = "block";
+	cancelDiv.style.display = "none";
 });
 
 self.port.on("save-userp-response",
@@ -98,6 +111,27 @@ function(){
 	// Reset the visibility for the popup
 	userpDiv.style.display = "none";
 	buttonDiv.style.display = "block";
+	cancelDiv.style.display = "none";
+});
+
+self.port.on("cancel-response",
+function(){
+	// Reset the visibility for the popup
+	userpDiv.style.display = "none";
+	pinfoDiv.style.display = "none";
+	cancelDiv.style.display = "none";
+	buttonDiv.style.display = "block";
+	usernameInput.value = "";
+	passwordInput = "";
+	actionInput = "";
+	firstInput.value = "";
+	lastInput.value = "";
+	addressInput.value = "";
+	cityInput.value = "";
+	stateInput.value = "";
+	countryInput.value = "";
+	phoneInput.value = "";
+	emailInput.value = "";
 });
 
 //Listen for saved info response
@@ -105,7 +139,7 @@ self.port.on("pinfo-response", function(savedInfo){
 	// Display pinfo div and hide buttons
 	pinfoDiv.style.display = "block";
 	buttonDiv.style.display = "none";
-	
+	cancelDiv.style.display = "block";
 	// Fill in the values if we have some saved
 	if(savedInfo){
 		var savedObj = JSON.parse(savedInfo);
@@ -126,9 +160,10 @@ self.port.on("userp-response", function(savedObj){
 	// Display userp div and hide buttons
 	userpDiv.style.display = "block";
 	buttonDiv.style.display = "none";
+	cancelDiv.style.display = "block";
 	// Fill in the values if we have some saved
 	if(savedObj){
-		console.log("save: " + savedObj);
+		//console.log("save: " + savedObj);
 		// this should be an array keyed by either form action or domain...
 		usernameInput.value = savedObj.username;
 		passwordInput.value = savedObj.password;

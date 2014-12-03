@@ -45,13 +45,13 @@ if(form){
 
 self.port.on("pinfo-response", function(saveObj){
 	if(saveObj){
-		console.log("parsing pinfo response");
+		//console.log("parsing pinfo response");
 		personalInfo = JSON.parse(saveObj);
 		//console.log(saveObj);
 		if(loginInfo){ checkForms(); }
 	}
 	else{
-		console.log("no personal info");
+		//console.log("no personal info");
 	}
 });
 
@@ -86,7 +86,7 @@ function checkForms(){
 			var form_inputs = form[i].getElementsByTagName('input');
 			loginForm = form[i];
 			//add a listener to the form onSubmit function!
-			form[i].onsubmit = formSubmitter;
+			//form[i].onsubmit = formSubmitter;
 			
 			//loop through the inputs within the form
 			for (var j = 0; j < form_inputs.length; j++){
