@@ -5,10 +5,11 @@ function passwordObject(user, pword, action){
 }
 
 // Create personal info object
-function personalInfoObject(first, last, address, state, country, phone, email) {
+function personalInfoObject(first, last, address, city, state, country, phone, email) {
 	this.first = first;
 	this.last = last;
 	this.address = address;
+	this.city = city.
 	this.state = state;
 	this.country = country;
 	this.phone = phone;
@@ -29,7 +30,8 @@ var userpDiv = document.getElementById("userpDiv");
 
 var firstInput = document.getElementById("first");
 var lastInput = document.getElementById("last");  
-var addressInput = document.getElementById("address");  
+var addressInput = document.getElementById("address");
+var cityInput = document.getElementById("city");
 var stateInput = document.getElementById("state"); 
 var countryInput = document.getElementById("country");  
 var phoneInput = document.getElementById("phone");  
@@ -37,7 +39,7 @@ var emailInput = document.getElementById("email");
 
 var usernameInput = document.getElementById("username");
 var passwordInput = document.getElementById("password");  
-var actionInput = document.getElementById("action"); 
+var actionInput = ""; 
 
 //Add click listeners
 fillButton.addEventListener("click", 
@@ -66,6 +68,7 @@ function(){
 						firstInput.value,
 						lastInput.value,
 						addressInput.value,
+						cityInput.value,
 						stateInput.value,
 						countryInput.value,
 						phoneInput.value,
@@ -78,7 +81,7 @@ function(){
 	var newSaveObj = new passwordObject(
 						usernameInput.value,
 						passwordInput.value,
-						encodeURIComponent(actionInput.value));
+						encodeURIComponent(actionInput));
 	self.port.emit("save-userp-request", newSaveObj);
 });
 
@@ -110,6 +113,7 @@ self.port.on("pinfo-response", function(savedInfo){
 			firstInput.value = savedObj.first;
 			lastInput.value = savedObj.last;
 			addressInput.value = savedObj.address;
+			cityInput.value = savedObj.city;
 			stateInput.value = savedObj.state;
 			countryInput.value = savedObj.country;
 			phoneInput.value = savedObj.phone;
@@ -128,7 +132,7 @@ self.port.on("userp-response", function(savedObj){
 		// this should be an array keyed by either form action or domain...
 		usernameInput.value = savedObj.username;
 		passwordInput.value = savedObj.password;
-		actionInput.value = decodeURIComponent(savedObj.action);
+		actionInput = decodeURIComponent(savedObj.action);
 	}
 });
 

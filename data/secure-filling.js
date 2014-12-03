@@ -1,4 +1,3 @@
-
 // Create password object
 function passwordObject(user, pword, action){
 	this.username = user;
