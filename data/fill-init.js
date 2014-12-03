@@ -1,9 +1,9 @@
 var inputs = document.getElementsByTagName('input');
 var form = document.getElementsByTagName('form');
 var dummy = self.options.dummyval;
+var truedoc = "";
 var usernameInput;
 var passwordInput;
-
 var firstInput;
 var lastInput;  
 var addressInput;
@@ -17,30 +17,41 @@ var loginInfo;
 var personalInfo;
 var loginForm;
 var waitingForInfo = false;
-var needPInfo = false;
 
-if(form){
-	checkForms();
-	//if there is at least one form call for login info
-	//console.log("made request");
-	if(loginForm){self.port.emit("userp-request");}
-	if(needPInfo){self.port.emit("pinfo-request");}
-}
+//Receive all our saved information
 
-self.port.on("pinfo-response", function(saveObj){
-	personalInfo = JSON.parse(saveObj);
-	//console.log(saveObj);
-	checkForms();
-});
-
-self.port.on("save-data", function(saveObj){
+self.port.on("saved-userp", function(saveObj){
 	//console.log("got response");
 	//store the save object info
-	loginInfo = saveObj;
-	checkForms();
+	if(saveObj){
+		console.log("recieved save data");
+		loginInfo = saveObj;
+	}
+	else{console.log("no save data");}
+	if(personalInfo){ checkForms(); }
 	//if we were waiting call the submission function
 	if(waitingForInfo){
 		formSubmitter();
+	}
+});
+
+self.port.on("tab-url", function(url){ truedoc = url; });
+self.port.emit("userp-request");
+self.port.emit("pinfo-request");
+
+if(form){
+	//checkForms();
+}
+
+self.port.on("pinfo-response", function(saveObj){
+	if(saveObj){
+		console.log("parsing pinfo response");
+		personalInfo = JSON.parse(saveObj);
+		//console.log(saveObj);
+		if(loginInfo){ checkForms(); }
+	}
+	else{
+		console.log("no personal info");
 	}
 });
 
@@ -55,15 +66,22 @@ function pInfoMatch(input){
 	else if(input.name.match("phone") || input.id.match("phone")){ phoneInput = input; }
 	else if(input.name.match("email") || input.id.match("email")){ emailInput = input; }
 	else { return false; }
-	console.log("matched " + input.name + " pinfo field");
-	needPInfo = true;
+	//console.log("matched " + input.name + " pinfo field");
 	return true;
 }
 
 function checkForms(){
 	//check for login forms
 	for (var i = 0; i < form.length; i++) {
-		if(form[i].id.match("login") || form[i].id.match("register")){
+		if(form[i].id.match("login") || form[i].id.match("register") || form[i].name.match("login") || form[i].name.match("register")){
+			//console.log("found form named " + form[i].name);
+			//check that its not an iframe
+			//console.log("form: " + form[i].ownerDocument.documentURI);
+			//console.log("doc: " + truedoc);
+			if(form[i].ownerDocument.documentURI !== truedoc){console.log("skipping iFrame"); continue;}
+			//check that action matches if we have a saved action
+			if(form[i].action !== decodeURIComponent(loginInfo['action'])){console.log("skipping non-matching action form"); continue;}
+			
 			//use this one if it is about inputs!
 			var form_inputs = form[i].getElementsByTagName('input');
 			loginForm = form[i];
@@ -82,7 +100,7 @@ function checkForms(){
 				}
 				
 				//if this is a username input
-				if(form_inputs[j].name.match("user") || form_inputs[j].id.match("uname") || form_inputs[j].name.match("email")){
+				if(form_inputs[j].name.match("usr") || form_inputs[j].name.match("user") || form_inputs[j].id.match("uname") || form_inputs[j].name.match("email")){
 					//enter the dummy value!
 					if(loginInfo){
 					form_inputs[j].style.backgroundColor = "yellow";
@@ -96,6 +114,7 @@ function checkForms(){
 					}
 				}
 			}
+			//break;
 		}
 	}
 }
@@ -171,3 +190,5 @@ function formSubmitter() {
 		this.submit();
 	}
 }
+
+self.port.on("submit-the-form!", formSubmitter);

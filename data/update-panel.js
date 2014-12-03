@@ -39,7 +39,7 @@ var emailInput = document.getElementById("email");
 
 var usernameInput = document.getElementById("username");
 var passwordInput = document.getElementById("password");  
-var actionInput = ""; 
+var actionInput = document.getElementById("action"); 
 
 //Add click listeners
 fillButton.addEventListener("click", 
@@ -81,7 +81,7 @@ function(){
 	var newSaveObj = new passwordObject(
 						usernameInput.value,
 						passwordInput.value,
-						encodeURIComponent(actionInput));
+						encodeURIComponent(actionInput.value));
 	self.port.emit("save-userp-request", newSaveObj);
 });
 
@@ -132,7 +132,7 @@ self.port.on("userp-response", function(savedObj){
 		// this should be an array keyed by either form action or domain...
 		usernameInput.value = savedObj.username;
 		passwordInput.value = savedObj.password;
-		actionInput = decodeURIComponent(savedObj.action);
+		actionInput.value = decodeURIComponent(savedObj.action);
 	}
 });
 
