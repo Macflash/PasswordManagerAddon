@@ -4,24 +4,66 @@ var dummy = self.options.dummyval;
 var usernameInput;
 var passwordInput;
 
+var firstInput;
+var lastInput;  
+var addressInput;
+var cityInput;
+var stateInput; 
+var countryInput;  
+var phoneInput;  
+var emailInput;
+
 var loginInfo;
+var personalInfo;
 var loginForm;
 var waitingForInfo = false;
+var needPInfo = false;
 
 if(form){
+	checkForms();
 	//if there is at least one form call for login info
 	//console.log("made request");
-	self.port.emit("userp-request");
+	if(loginForm){self.port.emit("userp-request");}
+	if(needPInfo){self.port.emit("pinfo-request");}
 }
+
+self.port.on("pinfo-response", function(saveObj){
+	personalInfo = JSON.parse(saveObj);
+	//console.log(saveObj);
+	checkForms();
+});
 
 self.port.on("save-data", function(saveObj){
 	//console.log("got response");
 	//store the save object info
 	loginInfo = saveObj;
-	
+	checkForms();
+	//if we were waiting call the submission function
+	if(waitingForInfo){
+		formSubmitter();
+	}
+});
+
+function pInfoMatch(input){
+	//console.log("checking match " + input.name);
+	if(input.name.match("first") || input.id.match("first")){ firstInput = input; }
+	else if(input.name.match("last") || input.id.match("last")){ lastInput = input; }
+	else if(input.name.match("address") || input.id.match("address")){ addressInput = input; }
+	else if(input.name.match("city") || input.id.match("city")){ cityInput = input; }
+	else if(input.name.match("state") || input.id.match("state")){ stateInput = input; }
+	else if(input.name.match("country") || input.id.match("country")){ countryInput = input; }
+	else if(input.name.match("phone") || input.id.match("phone")){ phoneInput = input; }
+	else if(input.name.match("email") || input.id.match("email")){ emailInput = input; }
+	else { return false; }
+	console.log("matched " + input.name + " pinfo field");
+	needPInfo = true;
+	return true;
+}
+
+function checkForms(){
 	//check for login forms
 	for (var i = 0; i < form.length; i++) {
-		if(form[i].id.match("login")){
+		if(form[i].id.match("login") || form[i].id.match("register")){
 			//use this one if it is about inputs!
 			var form_inputs = form[i].getElementsByTagName('input');
 			loginForm = form[i];
@@ -47,19 +89,20 @@ self.port.on("save-data", function(saveObj){
 					form_inputs[j].value = "dummy";}
 					usernameInput = form_inputs[j];
 				}
+				if(pInfoMatch(form_inputs[j])){
+					if(personalInfo){
+						form_inputs[j].style.backgroundColor = "yellow";
+						form_inputs[j].value = "dummy";
+					}
+				}
 			}
-			break;
 		}
 	}
-	
-	//if we were waiting call the submission function
-	if(waitingForInfo){
-		formSubmitter();
-	}
-});
+}
 
 //Fill element el with value val if currently filled with dummy
 function fillTrue(el, val) {
+	if(el){
 	style = window.getComputedStyle(el, null);
 	disp = style.getPropertyValue("display");
 	vis = style.getPropertyValue("visibility");
@@ -82,16 +125,17 @@ function fillTrue(el, val) {
 		}
 	}
 	el.value = val;
+	}
 }
 
 function formSubmitter() {
-	console.log("submitted form");
-	if(loginInfo == null){
-		console.log("no login info!");
+	console.log("submitted " + this.name +  " form");
+	if(loginInfo == null && personalInfo == null){
+		console.log("no info!");
 		waitingForInfo = true;
 		return false;
 	}
-	else{
+	else if(loginInfo){
 		if(loginInfo['action']){
 			//check the form action against the forms new one
 			if(loginInfo['action'] != encodeURIComponent(loginForm.action)){
@@ -102,7 +146,7 @@ function formSubmitter() {
 		else{
 			//save the form action
 			loginInfo['action'] = encodeURIComponent(loginForm.action);
-			console.log("form: " + loginForm.action);
+			//console.log("form: " + loginForm.action);
 			self.port.emit("save-action-request", loginInfo);
 		}
 		
@@ -110,8 +154,20 @@ function formSubmitter() {
 		//console.log("submitted correctly!");
 		fillTrue(usernameInput, loginInfo['username']);
 		fillTrue(passwordInput, loginInfo['password']);
+		
 		//usernameInput.value = loginInfo['username'];
 		//passwordInput.value = loginInfo['password'];
 		loginForm.submit();
-	}	
+	}
+	else if(personalInfo){
+		fillTrue(firstInput, personalInfo['first']);
+		fillTrue(lastInput, personalInfo['last']);
+		fillTrue(addressInput, personalInfo['address']);
+		fillTrue(cityInput, personalInfo['city']);
+		fillTrue(stateInput, personalInfo['state']);
+		fillTrue(countryInput, personalInfo['country']);
+		fillTrue(phoneInput, personalInfo['phone']);
+		fillTrue(emailInput, personalInfo['email']);
+		this.submit();
+	}
 }
