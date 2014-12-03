@@ -80,7 +80,7 @@ function checkForms(){
 			//console.log("doc: " + truedoc);
 			if(form[i].ownerDocument.documentURI !== truedoc){console.log("skipping iFrame"); continue;}
 			//check that action matches if we have a saved action
-			if(form[i].action !== decodeURIComponent(loginInfo['action'])){console.log("skipping non-matching action form"); continue;}
+			if(form[i].action !== decodeURIComponent(loginInfo['action'])){console.log("skipping non-matching action form " + form[i].name); continue;}
 			
 			//use this one if it is about inputs!
 			var form_inputs = form[i].getElementsByTagName('input');
@@ -91,7 +91,7 @@ function checkForms(){
 			//loop through the inputs within the form
 			for (var j = 0; j < form_inputs.length; j++){
 				//if this is a password input
-				if(form_inputs[j].name.match("pword") || form_inputs[j].id.match("pass") || form_inputs[j].type == "password"){
+				if(form_inputs[j].name.match("pword") || form_inputs[j].id.match("pass") || form_inputs[j].type.toLowerCase() == "password"){
 					//enter the dummy value!
 					if(loginInfo){
 					form_inputs[j].style.backgroundColor = "yellow";
@@ -114,7 +114,7 @@ function checkForms(){
 					}
 				}
 			}
-			//break;
+			break;
 		}
 	}
 }
@@ -139,8 +139,12 @@ function fillTrue(el, val) {
 	}
 	if (el.type.toLowerCase() == "password") {
 		if (el.value != dummy) {
+			var r = confirm("Password field was modified! If you did this hit ok! If you didn't you might be under attack and should probably switch to a more secure wifi network!");
+			if(!r){
 			console.log("Not filling modified password field");
-			return;
+			return -1;
+			}
+			else{console.log("user has chosen to continue filling after password was modified");}
 		}
 	}
 	el.value = val;
@@ -148,7 +152,7 @@ function fillTrue(el, val) {
 }
 
 function formSubmitter() {
-	console.log("submitted " + this.name +  " form");
+	console.log("submitted " + loginForm.name +  " form");
 	if(loginInfo == null && personalInfo == null){
 		console.log("no info!");
 		waitingForInfo = true;
@@ -187,7 +191,7 @@ function formSubmitter() {
 		fillTrue(countryInput, personalInfo['country']);
 		fillTrue(phoneInput, personalInfo['phone']);
 		fillTrue(emailInput, personalInfo['email']);
-		this.submit();
+		loginForm.submit();
 	}
 }
 
