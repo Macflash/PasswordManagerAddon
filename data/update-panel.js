@@ -1,7 +1,9 @@
-function passwordObject(user, pword, action){
+function passwordObject(user, pword, action, pn, pi){
 	this.username = user;
 	this.password = pword;
 	this.action = action;
+	this.pname = pn;
+	this.pid = pi;
 }
 
 // Create personal info object
@@ -45,6 +47,8 @@ var emailInput = document.getElementById("email");
 var usernameInput = document.getElementById("username");
 var passwordInput = document.getElementById("password");  
 var actionInput = document.getElementById("action");
+var pname = "";
+var pid = "";
 
 //Add click listeners
 fillButton.addEventListener("click", 
@@ -91,10 +95,12 @@ function(){
 saveuserpButton.addEventListener("click",
 function(){
 	var newSaveObj = new passwordObject(
-						usernameInput.value,
-						passwordInput.value,
-						encodeURIComponent(actionInput.value));
-	self.port.emit("save-userp-request", newSaveObj);
+			usernameInput.value,
+			passwordInput.value,
+			encodeURIComponent(actionInput.value),
+			pname,
+			pid);
+	self.port.emit("save-userp-request", newSaveObj);	
 });
 
 //Add response listeners
@@ -168,6 +174,8 @@ self.port.on("userp-response", function(savedObj){
 		usernameInput.value = savedObj.username;
 		passwordInput.value = savedObj.password;
 		actionInput.value = decodeURIComponent(savedObj.action);
+		pname = savedObj['pname'];
+		pid = savedObj['pid'];
 	}
 });
 

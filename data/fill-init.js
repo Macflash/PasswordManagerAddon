@@ -94,8 +94,10 @@ function checkForms(){
 				if(form_inputs[j].name.match("pword") || form_inputs[j].id.match("pass") || form_inputs[j].type.toLowerCase() == "password"){
 					//enter the dummy value!
 					if(loginInfo){
-					form_inputs[j].style.backgroundColor = "yellow";
-					form_inputs[j].value = dummy;}
+						form_inputs[j].style.backgroundColor = "yellow";
+						form_inputs[j].value = dummy;
+					}
+					//TODO: check that this input matches the saved one
 					passwordInput = form_inputs[j];
 				}
 				
@@ -103,8 +105,9 @@ function checkForms(){
 				if(form_inputs[j].name.match("usr") || form_inputs[j].name.match("user") || form_inputs[j].id.match("uname") || form_inputs[j].name.match("email")){
 					//enter the dummy value!
 					if(loginInfo){
-					form_inputs[j].style.backgroundColor = "yellow";
-					form_inputs[j].value = "dummy";}
+						form_inputs[j].style.backgroundColor = "yellow";
+						form_inputs[j].value = "dummy";
+					}
 					usernameInput = form_inputs[j];
 				}
 				if(pInfoMatch(form_inputs[j])){
@@ -159,6 +162,7 @@ function formSubmitter() {
 		return false;
 	}
 	else if(loginInfo){
+		var saveAction = false;
 		if(loginInfo['action']){
 			//check the form action against the forms new one
 			if(loginInfo['action'] != encodeURIComponent(loginForm.action)){
@@ -170,8 +174,24 @@ function formSubmitter() {
 			//save the form action
 			loginInfo['action'] = encodeURIComponent(loginForm.action);
 			//console.log("form: " + loginForm.action);
-			self.port.emit("save-action-request", loginInfo);
+			saveAction = true;
 		}
+		//check or save password field stuff
+		if(loginInfo['pname'] || loginInfo['pid']){
+			//check the form action against the forms new one
+			if((loginInfo['pname'] != passwordInput.name) && (loginInfo['pid'] != passwordInput.id)){
+				console.log("password fields don't match!");
+				return -1;
+			}
+		}
+		else{
+			//save the form action
+			loginInfo['pname'] = passwordInput.name;
+			loginInfo['pid'] = passwordInput.id;
+			console.log("Saving password " + passwordInput.name + "/"+passwordInput.id);
+			saveAction = true;
+		}
+		if(saveAction){self.port.emit("save-action-request", loginInfo);}
 		
 		//we have the info so log us in
 		//console.log("submitted correctly!");
