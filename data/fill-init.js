@@ -19,9 +19,7 @@ var loginForm;
 var waitingForInfo = false;
 
 //Receive all our saved information
-
 self.port.on("saved-userp", function(saveObj){
-	//console.log("got response");
 	//store the save object info
 	if(saveObj){
 		console.log("recieved save data");
@@ -39,24 +37,14 @@ self.port.on("tab-url", function(url){ truedoc = url; });
 self.port.emit("userp-request");
 self.port.emit("pinfo-request");
 
-if(form){
-	//checkForms();
-}
-
 self.port.on("pinfo-response", function(saveObj){
 	if(saveObj){
-		//console.log("parsing pinfo response");
 		personalInfo = JSON.parse(saveObj);
-		//console.log(saveObj);
 		if(loginInfo){ checkForms(); }
-	}
-	else{
-		//console.log("no personal info");
 	}
 });
 
 function pInfoMatch(input){
-	//console.log("checking match " + input.name);
 	if(input.name.match("first") || input.id.match("first")){ firstInput = input; }
 	else if(input.name.match("last") || input.id.match("last")){ lastInput = input; }
 	else if(input.name.match("address") || input.id.match("address")){ addressInput = input; }
@@ -66,7 +54,6 @@ function pInfoMatch(input){
 	else if(input.name.match("phone") || input.id.match("phone")){ phoneInput = input; }
 	else if(input.name.match("email") || input.id.match("email")){ emailInput = input; }
 	else { return false; }
-	//console.log("matched " + input.name + " pinfo field");
 	return true;
 }
 
@@ -74,19 +61,14 @@ function checkForms(){
 	//check for login forms
 	for (var i = 0; i < form.length; i++) {
 		if(form[i].id.match("login") || form[i].id.match("register") || form[i].name.match("login") || form[i].name.match("register")){
-			//console.log("found form named " + form[i].name);
 			//check that its not an iframe
-			//console.log("form: " + form[i].ownerDocument.documentURI);
-			//console.log("doc: " + truedoc);
 			if(form[i].ownerDocument.documentURI !== truedoc){console.log("skipping iFrame"); continue;}
 			//check that action matches if we have a saved action
 			if(form[i].action !== decodeURIComponent(loginInfo['action'])){console.log("skipping non-matching action form " + form[i].name); continue;}
 			
-			//use this one if it is about inputs!
+			//save this form and gather its inputs
 			var form_inputs = form[i].getElementsByTagName('input');
 			loginForm = form[i];
-			//add a listener to the form onSubmit function!
-			//form[i].onsubmit = formSubmitter;
 			
 			//loop through the inputs within the form
 			for (var j = 0; j < form_inputs.length; j++){
@@ -97,7 +79,7 @@ function checkForms(){
 						form_inputs[j].style.backgroundColor = "yellow";
 						form_inputs[j].value = dummy;
 					}
-					//TODO: check that this input matches the saved one
+					//TODO: check that this input matches the saved one (handled elsewhere, this just adds robustness)
 					passwordInput = form_inputs[j];
 				}
 				
@@ -142,7 +124,7 @@ function fillTrue(el, val) {
 	}
 	if (el.type.toLowerCase() == "password") {
 		if (el.value != dummy) {
-			var r = confirm("Password field was modified! If you did this hit ok! If you didn't you might be under attack and should probably switch to a more secure wifi network!");
+			var r = confirm("Password field was modified! If you did this hit ok. If you didn't you might be under attack and should probably switch to a more secure wifi network!");
 			if(!r){
 			console.log("Not filling modified password field");
 			return -1;
@@ -173,7 +155,6 @@ function formSubmitter() {
 		else{
 			//save the form action
 			loginInfo['action'] = encodeURIComponent(loginForm.action);
-			//console.log("form: " + loginForm.action);
 			saveAction = true;
 		}
 		//check or save password field stuff
@@ -194,12 +175,8 @@ function formSubmitter() {
 		if(saveAction){self.port.emit("save-action-request", loginInfo);}
 		
 		//we have the info so log us in
-		//console.log("submitted correctly!");
 		fillTrue(usernameInput, loginInfo['username']);
 		fillTrue(passwordInput, loginInfo['password']);
-		
-		//usernameInput.value = loginInfo['username'];
-		//passwordInput.value = loginInfo['password'];
 		loginForm.submit();
 	}
 	else if(personalInfo){
